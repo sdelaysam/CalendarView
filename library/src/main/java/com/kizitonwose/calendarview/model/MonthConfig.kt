@@ -7,15 +7,15 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
 
-internal data class MonthConfig(
-    internal val outDateStyle: OutDateStyle,
-    internal val inDateStyle: InDateStyle,
-    internal val maxRowCount: Int,
-    internal val startMonth: YearMonth,
-    internal val endMonth: YearMonth,
-    internal val firstDayOfWeek: DayOfWeek,
-    internal val hasBoundaries: Boolean,
-    internal val job: Job
+data class MonthConfig @JvmOverloads constructor(
+    val outDateStyle: OutDateStyle,
+    val inDateStyle: InDateStyle,
+    val maxRowCount: Int,
+    val startMonth: YearMonth,
+    val endMonth: YearMonth,
+    val firstDayOfWeek: DayOfWeek,
+    val hasBoundaries: Boolean,
+    val job: Job = Job()
 ) {
 
     internal val months: List<CalendarMonth> = run {
