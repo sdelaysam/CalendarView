@@ -19,8 +19,12 @@ import com.kizitonwose.calendarview.model.DayOwner
 import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
+import com.kizitonwose.calendarview.utils.lengthOfMonth
 import com.kizitonwose.calendarview.utils.yearMonth
 import com.kizitonwose.calendarviewsample.*
+import org.joda.time.Days
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -29,9 +33,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.lang.Thread.sleep
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.YearMonth
 
 /**
  * These are UI behaviour tests.
@@ -65,7 +66,7 @@ class CalenderViewTests {
 
         var boundDay: CalendarDay? = null
 
-        val changedDate = currentMonth.atDay(4)
+        val changedDate = currentMonth.toLocalDate(4)
 
         homeScreenRule.runOnUiThread {
             calendarView.dayBinder = object : DayBinder<DayViewContainer> {
@@ -138,7 +139,7 @@ class CalenderViewTests {
 
         val calendarView = findFragment<Example5Fragment>().findViewById<CalendarView>(R.id.exFiveCalendar)
 
-        assertTrue(calendarView.findViewWithTag<View>(currentMonth.atDay(1).hashCode()) != null)
+        assertTrue(calendarView.findViewWithTag<View>(currentMonth.toLocalDate(1).hashCode()) != null)
 
         val nextFourMonths = currentMonth.plusMonths(4)
 
@@ -148,8 +149,8 @@ class CalenderViewTests {
 
         sleep(2000)
 
-        assertTrue(calendarView.findViewWithTag<View>(currentMonth.atDay(1).hashCode()) == null)
-        assertTrue(calendarView.findViewWithTag<View>(nextFourMonths.atDay(1).hashCode()) != null)
+        assertTrue(calendarView.findViewWithTag<View>(currentMonth.toLocalDate(1).hashCode()) == null)
+        assertTrue(calendarView.findViewWithTag<View>(nextFourMonths.toLocalDate(1).hashCode()) != null)
     }
 
     @Test
@@ -158,7 +159,7 @@ class CalenderViewTests {
 
         val calendarView = findFragment<Example2Fragment>().findViewById<CalendarView>(R.id.exTwoCalendar)
 
-        val targetDate = currentMonth.plusMonths(4).atDay(20)
+        val targetDate = currentMonth.plusMonths(4).toLocalDate(20)
 
         homeScreenRule.runOnUiThread {
             calendarView.scrollToDate(targetDate)
@@ -183,7 +184,7 @@ class CalenderViewTests {
 
         val calendarView = findFragment<Example6Fragment>().findViewById<CalendarView>(R.id.exSixCalendar)
 
-        val targetDate = currentMonth.plusMonths(3).atDay(18)
+        val targetDate = currentMonth.plusMonths(3).toLocalDate(18)
 
         homeScreenRule.runOnUiThread {
             calendarView.scrollToDate(targetDate)
@@ -229,14 +230,14 @@ class CalenderViewTests {
 
         val sixMonthsAhead = currentMonth.plusMonths(6)
         homeScreenRule.runOnUiThread {
-            calendarView.smoothScrollToDate(sixMonthsAhead.atDay(1))
+            calendarView.smoothScrollToDate(sixMonthsAhead.toLocalDate(1))
         }
         sleep(3000)
         assertEquals(targetCalMonth?.yearMonth, sixMonthsAhead)
 
         val eightMonthsAhead = currentMonth.plusMonths(8)
         homeScreenRule.runOnUiThread {
-            calendarView.scrollToDate(eightMonthsAhead.atDay(1))
+            calendarView.scrollToDate(eightMonthsAhead.toLocalDate(1))
         }
         sleep(3000)
         assertEquals(targetCalMonth?.yearMonth, eightMonthsAhead)
@@ -333,7 +334,7 @@ class CalenderViewTests {
         val calendarView = CalendarView(homeScreenRule.activity)
         homeScreenRule.runOnUiThread {
             val threadName = Thread.currentThread().name
-            calendarView.setupAsync(YearMonth.now(), YearMonth.now().plusMonths(10), DayOfWeek.SUNDAY) {
+            calendarView.setupAsync(YearMonth.now(), YearMonth.now().plusMonths(10), Days.SEVEN) {
                 assertTrue(threadName == Thread.currentThread().name)
                 calendarView.updateMonthConfigurationAsync {
                     assertTrue(threadName == Thread.currentThread().name)

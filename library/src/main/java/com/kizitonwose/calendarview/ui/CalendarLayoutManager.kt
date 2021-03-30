@@ -11,7 +11,7 @@ import com.kizitonwose.calendarview.CalendarView
 import com.kizitonwose.calendarview.model.CalendarDay
 import com.kizitonwose.calendarview.model.ScrollMode
 import com.kizitonwose.calendarview.utils.NO_INDEX
-import java.time.YearMonth
+import org.joda.time.YearMonth
 
 internal class CalendarLayoutManager(private val calView: CalendarView, @RecyclerView.Orientation orientation: Int) :
     LinearLayoutManager(calView.context, orientation, false) {

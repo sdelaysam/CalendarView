@@ -23,11 +23,10 @@ import com.kizitonwose.calendarviewsample.databinding.Example5CalendarDayBinding
 import com.kizitonwose.calendarviewsample.databinding.Example5CalendarHeaderBinding
 import com.kizitonwose.calendarviewsample.databinding.Example5EventItemViewBinding
 import com.kizitonwose.calendarviewsample.databinding.Example5FragmentBinding
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
+import org.joda.time.LocalDate
+import org.joda.time.LocalDateTime
+import org.joda.time.YearMonth
+import org.joda.time.format.DateTimeFormat
 import java.util.*
 
 data class Flight(val time: LocalDateTime, val departure: Airport, val destination: Airport, @ColorRes val color: Int) {
@@ -38,7 +37,7 @@ class Example5FlightsAdapter : RecyclerView.Adapter<Example5FlightsAdapter.Examp
 
     val flights = mutableListOf<Flight>()
 
-    private val formatter = DateTimeFormatter.ofPattern("EEE'\n'dd MMM'\n'HH:mm")
+    private val formatter = DateTimeFormat.forPattern("EEE'\n'dd MMM'\n'HH:mm")
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Example5FlightsViewHolder {
         return Example5FlightsViewHolder(
@@ -57,7 +56,7 @@ class Example5FlightsAdapter : RecyclerView.Adapter<Example5FlightsAdapter.Examp
 
         fun bind(flight: Flight) {
             binding.itemFlightDateText.apply {
-                text = formatter.format(flight.time)
+                text = formatter.print(flight.time)
                 setBackgroundColor(itemView.context.getColorCompat(flight.color))
             }
 
@@ -78,7 +77,7 @@ class Example5Fragment : BaseFragment(R.layout.example_5_fragment), HasToolbar {
     override val titleRes: Int = R.string.example_5_title
 
     private var selectedDate: LocalDate? = null
-    private val monthTitleFormatter = DateTimeFormatter.ofPattern("MMMM")
+    private val monthTitleFormatter = DateTimeFormat.forPattern("MMMM")
 
     private val flightsAdapter = Example5FlightsAdapter()
     private val flights = generateFlights().groupBy { it.time.toLocalDate() }
@@ -163,7 +162,8 @@ class Example5Fragment : BaseFragment(R.layout.example_5_fragment), HasToolbar {
                 if (container.legendLayout.tag == null) {
                     container.legendLayout.tag = month.yearMonth
                     container.legendLayout.children.map { it as TextView }.forEachIndexed { index, tv ->
-                        tv.text = daysOfWeek[index].getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
+                        val date = month.yearMonth.toLocalDate(daysOfWeek[index].days)
+                        tv.text = date.dayOfWeek().getAsShortText(Locale.ENGLISH)
                             .toUpperCase(Locale.ENGLISH)
                         tv.setTextColorRes(R.color.example_5_text_grey)
                         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
@@ -174,7 +174,7 @@ class Example5Fragment : BaseFragment(R.layout.example_5_fragment), HasToolbar {
         }
 
         binding.exFiveCalendar.monthScrollListener = { month ->
-            val title = "${monthTitleFormatter.format(month.yearMonth)} ${month.yearMonth.year}"
+            val title = "${monthTitleFormatter.print(month.yearMonth)} ${month.yearMonth.year}"
             binding.exFiveMonthYearText.text = title
 
             selectedDate?.let {

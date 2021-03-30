@@ -19,9 +19,10 @@ import com.kizitonwose.calendarview.ui.ViewContainer
 import com.kizitonwose.calendarviewsample.databinding.Example2CalendarDayBinding
 import com.kizitonwose.calendarviewsample.databinding.Example2CalendarHeaderBinding
 import com.kizitonwose.calendarviewsample.databinding.Example2FragmentBinding
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
+import org.joda.time.format.DateTimeFormat
+import java.util.*
 
 class Example2Fragment : BaseFragment(R.layout.example_2_fragment), HasToolbar, HasBackButton {
 
@@ -40,14 +41,16 @@ class Example2Fragment : BaseFragment(R.layout.example_2_fragment), HasToolbar, 
         setHasOptionsMenu(true)
         binding = Example2FragmentBinding.bind(view)
         val daysOfWeek = daysOfWeekFromLocale()
+        val currentMonth = YearMonth.now()
         binding.legendLayout.root.children.forEachIndexed { index, view ->
             (view as TextView).apply {
-                text = daysOfWeek[index].name.first().toString()
+                val date = currentMonth.toLocalDate(daysOfWeek[index].days)
+                text = date.dayOfWeek().getAsText(Locale.ENGLISH).first().toString()
                 setTextColorRes(R.color.example_2_white)
             }
         }
 
-        binding.exTwoCalendar.setup(YearMonth.now(), YearMonth.now().plusMonths(10), daysOfWeek.first())
+        binding.exTwoCalendar.setup(currentMonth, currentMonth.plusMonths(10), daysOfWeek.first())
 
         class DayViewContainer(view: View) : ViewContainer(view) {
             // Will be set when this container is bound. See the dayBinder.
@@ -107,8 +110,10 @@ class Example2Fragment : BaseFragment(R.layout.example_2_fragment), HasToolbar, 
         binding.exTwoCalendar.monthHeaderBinder = object : MonthHeaderFooterBinder<MonthViewContainer> {
             override fun create(view: View) = MonthViewContainer(view)
             override fun bind(container: MonthViewContainer, month: CalendarMonth) {
+                val date = month.yearMonth.toLocalDate(1)
                 @SuppressLint("SetTextI18n") // Concatenation warning for `setText` call.
-                container.textView.text = "${month.yearMonth.month.name.toLowerCase().capitalize()} ${month.year}"
+                container.textView.text =
+                    "${date.monthOfYear().getAsText(Locale.ENGLISH).toLowerCase().capitalize()} ${month.year}"
             }
         }
     }
@@ -122,7 +127,7 @@ class Example2Fragment : BaseFragment(R.layout.example_2_fragment), HasToolbar, 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.menuItemDone) {
             val date = selectedDate ?: return false
-            val text = "Selected: ${DateTimeFormatter.ofPattern("d MMMM yyyy").format(date)}"
+            val text = "Selected: ${DateTimeFormat.forPattern("d MMMM yyyy").print(date)}"
             Snackbar.make(requireView(), text, Snackbar.LENGTH_SHORT).show()
             fragmentManager?.popBackStack()
             return true

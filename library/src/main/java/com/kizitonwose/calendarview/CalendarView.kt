@@ -17,9 +17,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.YearMonth
+import org.joda.time.Days
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
 
 typealias Completion = () -> Unit
 
@@ -231,7 +231,7 @@ open class CalendarView : RecyclerView {
 
     private var startMonth: YearMonth? = null
     private var endMonth: YearMonth? = null
-    private var firstDayOfWeek: DayOfWeek? = null
+    private var firstDayOfWeek: Days? = null
 
     private var autoSize = true
     private var autoSizeHeight = SQUARE
@@ -660,7 +660,7 @@ open class CalendarView : RecyclerView {
      * @param endMonth The last month on the calendar.
      * @param firstDayOfWeek An instance of [DayOfWeek] enum to be the first day of week.
      */
-    fun setup(startMonth: YearMonth, endMonth: YearMonth, firstDayOfWeek: DayOfWeek) {
+    fun setup(startMonth: YearMonth, endMonth: YearMonth, firstDayOfWeek: Days) {
         configJob?.cancel()
         this.startMonth = startMonth
         this.endMonth = endMonth
@@ -690,7 +690,7 @@ open class CalendarView : RecyclerView {
     fun setupAsync(
         startMonth: YearMonth,
         endMonth: YearMonth,
-        firstDayOfWeek: DayOfWeek,
+        firstDayOfWeek: Days,
         completion: Completion? = null
     ) {
         configJob?.cancel()
@@ -815,7 +815,7 @@ open class CalendarView : RecyclerView {
         return endMonth ?: throw IllegalStateException("`endMonth` is not set. Have you called `setup()`?")
     }
 
-    private fun requireFirstDayOfWeek(): DayOfWeek {
+    private fun requireFirstDayOfWeek(): Days {
         return firstDayOfWeek ?: throw IllegalStateException("`firstDayOfWeek` is not set. Have you called `setup()`?")
     }
 

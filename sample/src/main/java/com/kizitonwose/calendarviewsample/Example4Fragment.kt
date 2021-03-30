@@ -20,14 +20,14 @@ import com.kizitonwose.calendarview.model.DayOwner
 import com.kizitonwose.calendarview.ui.DayBinder
 import com.kizitonwose.calendarview.ui.MonthHeaderFooterBinder
 import com.kizitonwose.calendarview.ui.ViewContainer
+import com.kizitonwose.calendarview.utils.lengthOfMonth
 import com.kizitonwose.calendarview.utils.yearMonth
 import com.kizitonwose.calendarviewsample.databinding.Example4CalendarDayBinding
 import com.kizitonwose.calendarviewsample.databinding.Example4CalendarHeaderBinding
 import com.kizitonwose.calendarviewsample.databinding.Example4FragmentBinding
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
+import org.joda.time.format.DateTimeFormat
 import java.util.*
 
 class Example4Fragment : BaseFragment(R.layout.example_4_fragment), HasToolbar, HasBackButton {
@@ -42,7 +42,7 @@ class Example4Fragment : BaseFragment(R.layout.example_4_fragment), HasToolbar, 
     private var startDate: LocalDate? = null
     private var endDate: LocalDate? = null
 
-    private val headerDateFormatter = DateTimeFormatter.ofPattern("EEE'\n'd MMM")
+    private val headerDateFormatter = DateTimeFormat.forPattern("EEE'\n'd MMM")
 
     private val startBackground: GradientDrawable by lazy {
         requireContext().getDrawableCompat(R.drawable.example_4_continuous_selected_bg_start) as GradientDrawable
@@ -67,17 +67,19 @@ class Example4Fragment : BaseFragment(R.layout.example_4_fragment), HasToolbar, 
             endBackground.setCornerRadius(topRight = radius, bottomRight = radius)
         }
 
+        val currentMonth = YearMonth.now()
         // Set the First day of week depending on Locale
         val daysOfWeek = daysOfWeekFromLocale()
         binding.legendLayout.root.children.forEachIndexed { index, view ->
             (view as TextView).apply {
-                text = daysOfWeek[index].getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
+                val date = currentMonth.toLocalDate(daysOfWeek[index].days)
+                text = date.dayOfWeek().getAsShortText(Locale.ENGLISH)
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
                 setTextColorRes(R.color.example_4_grey)
             }
         }
 
-        val currentMonth = YearMonth.now()
+
         binding.exFourCalendar.setup(currentMonth, currentMonth.plusMonths(12), daysOfWeek.first())
         binding.exFourCalendar.scrollToMonth(currentMonth)
 
@@ -172,7 +174,9 @@ class Example4Fragment : BaseFragment(R.layout.example_4_fragment), HasToolbar, 
         binding.exFourCalendar.monthHeaderBinder = object : MonthHeaderFooterBinder<MonthViewContainer> {
             override fun create(view: View) = MonthViewContainer(view)
             override fun bind(container: MonthViewContainer, month: CalendarMonth) {
-                val monthTitle = "${month.yearMonth.month.name.toLowerCase().capitalize()} ${month.year}"
+                val date = month.yearMonth.toLocalDate(1)
+                val monthTitle =
+                    "${date.monthOfYear().getAsText(Locale.ENGLISH).toLowerCase().capitalize()} ${month.year}"
                 container.textView.text = monthTitle
             }
         }
@@ -181,8 +185,8 @@ class Example4Fragment : BaseFragment(R.layout.example_4_fragment), HasToolbar, 
             val startDate = startDate
             val endDate = endDate
             if (startDate != null && endDate != null) {
-                val formatter = DateTimeFormatter.ofPattern("d MMMM yyyy")
-                val text = "Selected: ${formatter.format(startDate)} - ${formatter.format(endDate)}"
+                val formatter = DateTimeFormat.forPattern("d MMMM yyyy")
+                val text = "Selected: ${formatter.print(startDate)} - ${formatter.print(endDate)}"
                 Snackbar.make(requireView(), text, Snackbar.LENGTH_LONG).show()
             } else {
                 Snackbar.make(requireView(), "No selection. Searching all Airbnb listings.", Snackbar.LENGTH_LONG)
@@ -197,21 +201,22 @@ class Example4Fragment : BaseFragment(R.layout.example_4_fragment), HasToolbar, 
     private fun isInDateBetween(inDate: LocalDate, startDate: LocalDate, endDate: LocalDate): Boolean {
         if (startDate.yearMonth == endDate.yearMonth) return false
         if (inDate.yearMonth == startDate.yearMonth) return true
-        val firstDateInThisMonth = inDate.plusMonths(1).yearMonth.atDay(1)
+        val firstDateInThisMonth = inDate.plusMonths(1).yearMonth.toLocalDate(1)
         return firstDateInThisMonth >= startDate && firstDateInThisMonth <= endDate && startDate != firstDateInThisMonth
     }
 
     private fun isOutDateBetween(outDate: LocalDate, startDate: LocalDate, endDate: LocalDate): Boolean {
         if (startDate.yearMonth == endDate.yearMonth) return false
         if (outDate.yearMonth == endDate.yearMonth) return true
-        val lastDateInThisMonth = outDate.minusMonths(1).yearMonth.atEndOfMonth()
+        val thisMonth = outDate.minusMonths(1).yearMonth
+        val lastDateInThisMonth = thisMonth.toLocalDate(thisMonth.lengthOfMonth())
         return lastDateInThisMonth >= startDate && lastDateInThisMonth <= endDate && endDate != lastDateInThisMonth
     }
 
     private fun bindSummaryViews() {
         binding.exFourStartDateText.apply {
             if (startDate != null) {
-                text = headerDateFormatter.format(startDate)
+                text = headerDateFormatter.print(startDate)
                 setTextColorRes(R.color.example_4_grey)
             } else {
                 text = getString(R.string.start_date)
@@ -221,7 +226,7 @@ class Example4Fragment : BaseFragment(R.layout.example_4_fragment), HasToolbar, 
 
         binding.exFourEndDateText.apply {
             if (endDate != null) {
-                text = headerDateFormatter.format(endDate)
+                text = headerDateFormatter.print(endDate)
                 setTextColorRes(R.color.example_4_grey)
             } else {
                 text = getString(R.string.end_date)

@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import java.time.LocalDate
-import java.time.YearMonth
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
 
 internal fun ViewGroup.inflate(@LayoutRes layoutRes: Int, attachToRoot: Boolean = false): View {
     return LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)
@@ -19,13 +19,17 @@ internal inline fun Boolean?.orFalse(): Boolean = this ?: false
 internal inline fun Int?.orZero(): Int = this ?: 0
 
 val LocalDate.yearMonth: YearMonth
-    get() = YearMonth.of(year, month)
+    get() = YearMonth(year, monthOfYear)
 
 val YearMonth.next: YearMonth
     get() = this.plusMonths(1)
 
 val YearMonth.previous: YearMonth
     get() = this.minusMonths(1)
+
+fun YearMonth.lengthOfMonth(): Int {
+    return toLocalDate(1).dayOfMonth().maximumValue
+}
 
 internal const val NO_INDEX = -1
 

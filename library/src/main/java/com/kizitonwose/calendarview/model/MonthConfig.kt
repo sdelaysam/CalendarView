@@ -1,11 +1,12 @@
 package com.kizitonwose.calendarview.model
 
+import com.kizitonwose.calendarview.utils.lengthOfMonth
 import com.kizitonwose.calendarview.utils.next
 import kotlinx.coroutines.Job
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.temporal.WeekFields
+import org.joda.time.Days
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
+import java.util.*
 
 internal data class MonthConfig(
     internal val outDateStyle: OutDateStyle,
@@ -13,7 +14,7 @@ internal data class MonthConfig(
     internal val maxRowCount: Int,
     internal val startMonth: YearMonth,
     internal val endMonth: YearMonth,
-    internal val firstDayOfWeek: DayOfWeek,
+    internal val firstDayOfWeek: Days,
     internal val hasBoundaries: Boolean,
     internal val job: Job
 ) {
@@ -38,7 +39,7 @@ internal data class MonthConfig(
         fun generateBoundedMonths(
             startMonth: YearMonth,
             endMonth: YearMonth,
-            firstDayOfWeek: DayOfWeek,
+            firstDayOfWeek: Days,
             maxRowCount: Int,
             inDateStyle: InDateStyle,
             outDateStyle: OutDateStyle,
@@ -75,7 +76,7 @@ internal data class MonthConfig(
         internal fun generateUnboundedMonths(
             startMonth: YearMonth,
             endMonth: YearMonth,
-            firstDayOfWeek: DayOfWeek,
+            firstDayOfWeek: Days,
             maxRowCount: Int,
             inDateStyle: InDateStyle,
             outDateStyle: OutDateStyle,
@@ -116,7 +117,7 @@ internal data class MonthConfig(
                     val lastWeek = monthWeeks.last()
                     val lastDay = lastWeek.last()
                     val outDates = (1..7 - lastWeek.size).map {
-                        CalendarDay(lastDay.date.plusDays(it.toLong()), DayOwner.NEXT_MONTH)
+                        CalendarDay(lastDay.date.plusDays(it), DayOwner.NEXT_MONTH)
                     }
                     monthWeeks[monthWeeks.lastIndex] = lastWeek + outDates
                 }
@@ -149,7 +150,7 @@ internal data class MonthConfig(
                     val lastDay = monthWeeks.last().last()
 
                     val nextRowDates = (1..7).map {
-                        CalendarDay(lastDay.date.plusDays(it.toLong()), DayOwner.NEXT_MONTH)
+                        CalendarDay(lastDay.date.plusDays(it), DayOwner.NEXT_MONTH)
                     }
 
                     if (monthWeeks.last().size < 7) {
@@ -177,21 +178,25 @@ internal data class MonthConfig(
          */
         internal fun generateWeekDays(
             yearMonth: YearMonth,
-            firstDayOfWeek: DayOfWeek,
+            firstDayOfWeek: Days,
             generateInDates: Boolean,
             outDateStyle: OutDateStyle
         ): List<List<CalendarDay>> {
             val year = yearMonth.year
-            val month = yearMonth.monthValue
+            val month = yearMonth.monthOfYear
 
             val thisMonthDays = (1..yearMonth.lengthOfMonth()).map {
-                CalendarDay(LocalDate.of(year, month, it), DayOwner.THIS_MONTH)
+                CalendarDay(LocalDate(year, month, it), DayOwner.THIS_MONTH)
             }
 
+            val shift = if (firstDayOfWeek == Days.SEVEN) 1 else 0
+            val week = yearMonth.toLocalDate(1).weekOfWeekyear
             val weekDaysGroup = if (generateInDates) {
                 // Group days by week of month so we can add the in dates if necessary.
-                val weekOfMonthField = WeekFields.of(firstDayOfWeek, 1).weekOfMonth()
-                val groupByWeekOfMonth = thisMonthDays.groupBy { it.date.get(weekOfMonthField) }.values.toMutableList()
+
+                val groupByWeekOfMonth = thisMonthDays.groupBy {
+                    week - it.date.plusDays(shift).weekOfWeekyear
+                }.values.toMutableList()
 
                 // Add in-dates if necessary
                 val firstWeek = groupByWeekOfMonth.first()
@@ -200,7 +205,7 @@ internal data class MonthConfig(
                     val inDates = (1..previousMonth.lengthOfMonth()).toList()
                         .takeLast(7 - firstWeek.size).map {
                             CalendarDay(
-                                LocalDate.of(previousMonth.year, previousMonth.month, it),
+                                LocalDate(previousMonth.year, previousMonth.monthOfYear, it),
                                 DayOwner.PREVIOUS_MONTH
                             )
                         }
@@ -219,7 +224,7 @@ internal data class MonthConfig(
                     val lastWeek = weekDaysGroup.last()
                     val lastDay = lastWeek.last()
                     val outDates = (1..7 - lastWeek.size).map {
-                        CalendarDay(lastDay.date.plusDays(it.toLong()), DayOwner.NEXT_MONTH)
+                        CalendarDay(lastDay.date.plusDays(it), DayOwner.NEXT_MONTH)
                     }
                     weekDaysGroup[weekDaysGroup.lastIndex] = lastWeek + outDates
                 }
@@ -229,7 +234,7 @@ internal data class MonthConfig(
                     while (weekDaysGroup.size < 6) {
                         val lastDay = weekDaysGroup.last().last()
                         val nextRowDates = (1..7).map {
-                            CalendarDay(lastDay.date.plusDays(it.toLong()), DayOwner.NEXT_MONTH)
+                            CalendarDay(lastDay.date.plusDays(it), DayOwner.NEXT_MONTH)
                         }
                         weekDaysGroup.add(nextRowDates)
                     }

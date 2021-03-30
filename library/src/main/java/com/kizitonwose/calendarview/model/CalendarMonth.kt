@@ -1,7 +1,7 @@
 package com.kizitonwose.calendarview.model
 
+import org.joda.time.YearMonth
 import java.io.Serializable
-import java.time.YearMonth
 
 data class CalendarMonth(
     val yearMonth: YearMonth,
@@ -11,7 +11,7 @@ data class CalendarMonth(
 ) : Comparable<CalendarMonth>, Serializable {
 
     val year: Int = yearMonth.year
-    val month: Int = yearMonth.monthValue
+    val month: Int = yearMonth.monthOfYear
 
     override fun hashCode(): Int {
         return 31 * yearMonth.hashCode() +

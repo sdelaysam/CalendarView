@@ -18,10 +18,9 @@ import com.kizitonwose.calendarview.utils.next
 import com.kizitonwose.calendarview.utils.yearMonth
 import com.kizitonwose.calendarviewsample.databinding.Example1CalendarDayBinding
 import com.kizitonwose.calendarviewsample.databinding.Example1FragmentBinding
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
+import org.joda.time.format.DateTimeFormat
 import java.util.*
 
 class Example1Fragment : BaseFragment(R.layout.example_1_fragment), HasToolbar {
@@ -35,20 +34,22 @@ class Example1Fragment : BaseFragment(R.layout.example_1_fragment), HasToolbar {
 
     private val selectedDates = mutableSetOf<LocalDate>()
     private val today = LocalDate.now()
-    private val monthTitleFormatter = DateTimeFormatter.ofPattern("MMMM")
+    private val monthTitleFormatter = DateTimeFormat.forPattern("MMMM")
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = Example1FragmentBinding.bind(view)
         val daysOfWeek = daysOfWeekFromLocale()
+        val currentMonth = YearMonth.now()
         binding.legendLayout.root.children.forEachIndexed { index, view ->
             (view as TextView).apply {
-                text = daysOfWeek[index].getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toUpperCase(Locale.ENGLISH)
+                val date = currentMonth.toLocalDate(daysOfWeek[index].days)
+                text = date.dayOfWeek().getAsShortText(Locale.ENGLISH).toUpperCase(Locale.ENGLISH)
                 setTextColorRes(R.color.example_1_white_light)
             }
         }
 
-        val currentMonth = YearMonth.now()
+
         val startMonth = currentMonth.minusMonths(10)
         val endMonth = currentMonth.plusMonths(10)
         binding.exOneCalendar.setup(startMonth, endMonth, daysOfWeek.first())
@@ -104,7 +105,7 @@ class Example1Fragment : BaseFragment(R.layout.example_1_fragment), HasToolbar {
         binding.exOneCalendar.monthScrollListener = {
             if (binding.exOneCalendar.maxRowCount == 6) {
                 binding.exOneYearText.text = it.yearMonth.year.toString()
-                binding.exOneMonthText.text = monthTitleFormatter.format(it.yearMonth)
+                binding.exOneMonthText.text = monthTitleFormatter.print(it.yearMonth)
             } else {
                 // In week mode, we show the header a bit differently.
                 // We show indices with dates from different months since
@@ -114,10 +115,10 @@ class Example1Fragment : BaseFragment(R.layout.example_1_fragment), HasToolbar {
                 val lastDate = it.weekDays.last().last().date
                 if (firstDate.yearMonth == lastDate.yearMonth) {
                     binding.exOneYearText.text = firstDate.yearMonth.year.toString()
-                    binding.exOneMonthText.text = monthTitleFormatter.format(firstDate)
+                    binding.exOneMonthText.text = monthTitleFormatter.print(firstDate)
                 } else {
                     binding.exOneMonthText.text =
-                        "${monthTitleFormatter.format(firstDate)} - ${monthTitleFormatter.format(lastDate)}"
+                        "${monthTitleFormatter.print(firstDate)} - ${monthTitleFormatter.print(lastDate)}"
                     if (firstDate.year == lastDate.year) {
                         binding.exOneYearText.text = firstDate.yearMonth.year.toString()
                     } else {

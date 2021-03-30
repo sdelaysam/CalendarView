@@ -26,9 +26,9 @@ import com.kizitonwose.calendarviewsample.databinding.Example3CalendarDayBinding
 import com.kizitonwose.calendarviewsample.databinding.Example3CalendarHeaderBinding
 import com.kizitonwose.calendarviewsample.databinding.Example3EventItemViewBinding
 import com.kizitonwose.calendarviewsample.databinding.Example3FragmentBinding
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
+import org.joda.time.format.DateTimeFormat
 import java.util.*
 
 data class Event(val id: String, val text: String, val date: LocalDate)
@@ -114,9 +114,9 @@ class Example3Fragment : BaseFragment(R.layout.example_3_fragment), HasBackButto
     private var selectedDate: LocalDate? = null
     private val today = LocalDate.now()
 
-    private val titleSameYearFormatter = DateTimeFormatter.ofPattern("MMMM")
-    private val titleFormatter = DateTimeFormatter.ofPattern("MMM yyyy")
-    private val selectionFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+    private val titleSameYearFormatter = DateTimeFormat.forPattern("MMMM")
+    private val titleFormatter = DateTimeFormat.forPattern("MMM yyyy")
+    private val selectionFormatter = DateTimeFormat.forPattern("d MMM yyyy")
     private val events = mutableMapOf<LocalDate, List<Event>>()
 
     private lateinit var binding: Example3FragmentBinding
@@ -193,14 +193,14 @@ class Example3Fragment : BaseFragment(R.layout.example_3_fragment), HasBackButto
 
         binding.exThreeCalendar.monthScrollListener = {
             homeActivityToolbar.title = if (it.year == today.year) {
-                titleSameYearFormatter.format(it.yearMonth)
+                titleSameYearFormatter.print(it.yearMonth)
             } else {
-                titleFormatter.format(it.yearMonth)
+                titleFormatter.print(it.yearMonth)
             }
 
             // Select the first day of the month when
             // we scroll to a new month.
-            selectDate(it.yearMonth.atDay(1))
+            selectDate(it.yearMonth.toLocalDate(1))
         }
 
         class MonthViewContainer(view: View) : ViewContainer(view) {
@@ -213,7 +213,8 @@ class Example3Fragment : BaseFragment(R.layout.example_3_fragment), HasBackButto
                 if (container.legendLayout.tag == null) {
                     container.legendLayout.tag = month.yearMonth
                     container.legendLayout.children.map { it as TextView }.forEachIndexed { index, tv ->
-                        tv.text = daysOfWeek[index].name.first().toString()
+                        val date = month.yearMonth.toLocalDate(daysOfWeek[index].days)
+                        tv.text = date.dayOfWeek().getAsText(Locale.ENGLISH).first().toString()
                         tv.setTextColorRes(R.color.example_3_black)
                     }
                 }
@@ -258,7 +259,7 @@ class Example3Fragment : BaseFragment(R.layout.example_3_fragment), HasBackButto
             events.addAll(this@Example3Fragment.events[date].orEmpty())
             notifyDataSetChanged()
         }
-        binding.exThreeSelectedDateText.text = selectionFormatter.format(date)
+        binding.exThreeSelectedDateText.text = selectionFormatter.print(date)
     }
 
     override fun onStart() {

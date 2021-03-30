@@ -19,8 +19,9 @@ import com.kizitonwose.calendarview.utils.Size
 import com.kizitonwose.calendarviewsample.databinding.Example6CalendarDayBinding
 import com.kizitonwose.calendarviewsample.databinding.Example6CalendarHeaderBinding
 import com.kizitonwose.calendarviewsample.databinding.Example6FragmentBinding
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import org.joda.time.YearMonth
+import org.joda.time.format.DateTimeFormat
+import java.util.*
 
 // We assign this class to the `monthViewClass` attribute in XML.
 // See usage in example_6_fragment.xml
@@ -37,7 +38,7 @@ class Example6Fragment : BaseFragment(R.layout.example_6_fragment), HasBackButto
 
     override val titleRes: Int = R.string.example_6_title
 
-    private val titleFormatter = DateTimeFormatter.ofPattern("MMM yyyy")
+    private val titleFormatter = DateTimeFormat.forPattern("MMM yyyy")
 
     private lateinit var binding: Example6FragmentBinding
 
@@ -93,12 +94,13 @@ class Example6Fragment : BaseFragment(R.layout.example_6_fragment), HasBackButto
         binding.exSixCalendar.monthHeaderBinder = object : MonthHeaderFooterBinder<MonthViewContainer> {
             override fun create(view: View) = MonthViewContainer(view)
             override fun bind(container: MonthViewContainer, month: CalendarMonth) {
-                container.textView.text = titleFormatter.format(month.yearMonth)
+                container.textView.text = titleFormatter.print(month.yearMonth)
                 // Setup each header day text if we have not done that already.
                 if (container.legendLayout.tag == null) {
                     container.legendLayout.tag = month.yearMonth
                     container.legendLayout.children.map { it as TextView }.forEachIndexed { index, tv ->
-                        tv.text = daysOfWeek[index].name.first().toString()
+                        val date = month.yearMonth.toLocalDate(daysOfWeek[index].days)
+                        tv.text = date.dayOfWeek().getAsText(Locale.ENGLISH).first().toString()
                         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14F)
                         tv.setTextColorRes(R.color.example_6_black)
                     }

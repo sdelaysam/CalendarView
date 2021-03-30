@@ -4,10 +4,10 @@ import com.kizitonwose.calendarview.model.DayOwner
 import com.kizitonwose.calendarview.model.InDateStyle
 import com.kizitonwose.calendarview.model.MonthConfig
 import com.kizitonwose.calendarview.model.OutDateStyle
+import org.joda.time.Days
+import org.joda.time.YearMonth
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.DayOfWeek
-import java.time.YearMonth
 
 /**
  * These are core functionality tests.
@@ -17,9 +17,9 @@ class CalenderViewTests {
 
     // You can see what May and November 2019 with Monday as the first day of
     // week look like in the included May2019.png and November2019.png files.
-    private val may2019 = YearMonth.of(2019, 5)
+    private val may2019 = YearMonth(2019, 5)
     private val nov2019 = may2019.plusMonths(6)
-    private val firstDayOfWeek = DayOfWeek.MONDAY
+    private val firstDayOfWeek = Days.ONE
 
     @Test
     fun `test all month in date generation works as expected`() {
@@ -85,7 +85,7 @@ class CalenderViewTests {
     fun `test first day of week is in correct position`() {
         val weekDays = MonthConfig.generateWeekDays(may2019, firstDayOfWeek, true, OutDateStyle.END_OF_GRID)
 
-        assertTrue(weekDays.first().first().date.dayOfWeek == firstDayOfWeek)
+        assertTrue(weekDays.first().first().date.dayOfWeek == firstDayOfWeek.days)
     }
 
     @Test
@@ -134,8 +134,8 @@ class CalenderViewTests {
     fun `test unbounded month generation does not exceed number of days in each month`() {
         val maxRowCount = 6
         MonthConfig.generateUnboundedMonths(
-            YearMonth.of(2019, 2), YearMonth.of(2021, 2),
-            DayOfWeek.SUNDAY, maxRowCount, InDateStyle.ALL_MONTHS, OutDateStyle.END_OF_GRID
+            YearMonth(2019, 2), YearMonth(2021, 2),
+            Days.SEVEN, maxRowCount, InDateStyle.ALL_MONTHS, OutDateStyle.END_OF_GRID
         )
         // No assertion necessary, as this particular range would throw an exception previously
         // when trying to build a day that is out of bounds (eg: December 32).

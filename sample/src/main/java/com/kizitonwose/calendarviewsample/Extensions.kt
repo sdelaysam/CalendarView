@@ -12,8 +12,7 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.LayoutRes
 import androidx.core.content.ContextCompat
-import java.time.DayOfWeek
-import java.time.temporal.WeekFields
+import org.joda.time.Days
 import java.util.*
 
 fun View.makeVisible() {
@@ -52,17 +51,12 @@ internal fun Context.getColorCompat(@ColorRes color: Int) = ContextCompat.getCol
 
 internal fun TextView.setTextColorRes(@ColorRes color: Int) = setTextColor(context.getColorCompat(color))
 
-fun daysOfWeekFromLocale(): Array<DayOfWeek> {
-    val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
-    var daysOfWeek = DayOfWeek.values()
-    // Order `daysOfWeek` array so that firstDayOfWeek is at index 0.
-    // Only necessary if firstDayOfWeek != DayOfWeek.MONDAY which has ordinal 0.
-    if (firstDayOfWeek != DayOfWeek.MONDAY) {
-        val rhs = daysOfWeek.sliceArray(firstDayOfWeek.ordinal..daysOfWeek.indices.last)
-        val lhs = daysOfWeek.sliceArray(0 until firstDayOfWeek.ordinal)
-        daysOfWeek = rhs + lhs
+fun daysOfWeekFromLocale(): Array<Days> {
+    return if (Calendar.getInstance().firstDayOfWeek == Calendar.SUNDAY) {
+        arrayOf(Days.SEVEN, Days.ONE, Days.TWO, Days.THREE, Days.FOUR, Days.FIVE, Days.SIX)
+    } else {
+        arrayOf(Days.ONE, Days.TWO, Days.THREE, Days.FOUR, Days.FIVE, Days.SIX, Days.SEVEN)
     }
-    return daysOfWeek
 }
 
 fun GradientDrawable.setCornerRadius(

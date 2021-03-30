@@ -13,10 +13,9 @@ import com.kizitonwose.calendarview.ui.ViewContainer
 import com.kizitonwose.calendarview.utils.Size
 import com.kizitonwose.calendarviewsample.databinding.Example7CalendarDayBinding
 import com.kizitonwose.calendarviewsample.databinding.Example7FragmentBinding
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import org.joda.time.LocalDate
+import org.joda.time.YearMonth
+import org.joda.time.format.DateTimeFormat
 
 class Example7Fragment : BaseFragment(R.layout.example_7_fragment), HasToolbar, HasBackButton {
 
@@ -27,9 +26,9 @@ class Example7Fragment : BaseFragment(R.layout.example_7_fragment), HasToolbar, 
 
     private var selectedDate = LocalDate.now()
 
-    private val dateFormatter = DateTimeFormatter.ofPattern("dd")
-    private val dayFormatter = DateTimeFormatter.ofPattern("EEE")
-    private val monthFormatter = DateTimeFormatter.ofPattern("MMM")
+    private val dateFormatter = DateTimeFormat.forPattern("dd")
+    private val dayFormatter = DateTimeFormat.forPattern("EEE")
+    private val monthFormatter = DateTimeFormat.forPattern("MMM")
 
     private lateinit var binding: Example7FragmentBinding
 
@@ -81,9 +80,9 @@ class Example7Fragment : BaseFragment(R.layout.example_7_fragment), HasToolbar, 
 
             fun bind(day: CalendarDay) {
                 this.day = day
-                bind.exSevenDateText.text = dateFormatter.format(day.date)
-                bind.exSevenDayText.text = dayFormatter.format(day.date)
-                bind.exSevenMonthText.text = monthFormatter.format(day.date)
+                bind.exSevenDateText.text = dateFormatter.print(day.date)
+                bind.exSevenDayText.text = dayFormatter.print(day.date)
+                bind.exSevenMonthText.text = monthFormatter.print(day.date)
 
                 bind.exSevenDateText.setTextColor(view.context.getColorCompat(if (day.date == selectedDate) R.color.example_7_yellow else R.color.example_7_white))
                 bind.exSevenSelectedView.isVisible = day.date == selectedDate
@@ -97,7 +96,7 @@ class Example7Fragment : BaseFragment(R.layout.example_7_fragment), HasToolbar, 
 
         val currentMonth = YearMonth.now()
         // Value for firstDayOfWeek does not matter since inDates and outDates are not generated.
-        binding.exSevenCalendar.setup(currentMonth, currentMonth.plusMonths(3), DayOfWeek.values().random())
+        binding.exSevenCalendar.setup(currentMonth, currentMonth.plusMonths(3), daysOfWeekFromLocale().random())
         binding.exSevenCalendar.scrollToDate(LocalDate.now())
     }
 }
